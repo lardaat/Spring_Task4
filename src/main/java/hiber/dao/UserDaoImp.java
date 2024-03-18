@@ -27,12 +27,12 @@ public class UserDaoImp implements UserDao {
       return query.getResultList();
    }
 
-   public User getUserByCarModelAndSeries(String model, int series) {
+   public List<User> getUsersByCarModelAndSeries(String model, int series) {
       String sql = "SELECT u.* FROM users u JOIN cars c ON u.car_id = c.id WHERE LOWER(c.model) = LOWER(:model) AND c.series = :series";
       Query<User> query = sessionFactory.getCurrentSession().createNativeQuery(sql, User.class);
       query.setParameter("model", model);
       query.setParameter("series", series);
-      return query.uniqueResult();
+      return query.list();
    }
 
 }

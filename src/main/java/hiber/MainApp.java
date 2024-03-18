@@ -4,7 +4,9 @@ import hiber.config.AppConfig;
 import hiber.model.Car;
 import hiber.model.User;
 import hiber.service.UserService;
-import hiber.service.CarService;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.sql.SQLException;
@@ -16,20 +18,37 @@ public class MainApp {
             new AnnotationConfigApplicationContext(AppConfig.class);
 
       UserService userService = context.getBean(UserService.class);
-      CarService carService = context.getBean(CarService.class);
 
-      /*Car car1 = new Car("BMW", 600);
+
+      Car car1 = new Car("BMW", 600);
       Car car2 = new Car("GAZ", 66);
-      carService.add(car1);
-      carService.add(car2);
 
-      userService.add(new User("User1", "Lastname1", "user1@mail.ru", car1));
+      Session session = context.getBean(SessionFactory.class).openSession();
+      Transaction tx = null;
+      try {
+         tx = session.beginTransaction();
+         session.save(car1);
+         session.save(car2);
+         tx.commit();
+
+         userService.add(new User("User1", "Lastname1", "user1@mail.ru", car1));
+         userService.add(new User("User2", "Lastname2", "user2@mail.ru", car2));
+         userService.add(new User("User3", "Lastname3", "user3@mail.ru"));
+         userService.add(new User("User4", "Lastname4", "user4@mail.ru"));
+
+      } catch (Exception e) {
+         if (tx != null) tx.rollback();
+         e.printStackTrace();
+      } finally {
+         session.close();
+      }
+
+      /*userService.add(new User("User1", "Lastname1", "user1@mail.ru", car1));
       userService.add(new User("User2", "Lastname2", "user2@mail.ru", car2));
       userService.add(new User("User3", "Lastname3", "user3@mail.ru"));
       userService.add(new User("User4", "Lastname4", "user4@mail.ru"));*/
 
-//      carService.add(new Car("BMW", 600));
-//      carService.add(new Car("GAZ", 66));
+
 
 
 
@@ -47,36 +66,39 @@ public class MainApp {
          System.out.println();
       }
 
-      List<Car> cars = carService.listCars();
+      /*List<Car> cars = carService.listCars();
       for (Car car : cars) {
          System.out.println("Id = "+ car.getId());
          System.out.println("Model = "+car.getModel());
          System.out.println("Series = "+car.getSeries());
          System.out.println();
-      }
+      }*/
 
-      User userByCar = userService.getUserByCarModelAndSeries("BMW", 600);
-      if (userByCar != null) {
-         System.out.println("Пользователь, владеющий BMW 600-й серии:");
-         System.out.println("Id = " + userByCar.getId());
-         System.out.println("First Name = " + userByCar.getFirstName());
-         System.out.println("Last Name = " + userByCar.getLastName());
-         System.out.println("Email = " + userByCar.getEmail());
+      List<User> usersByCar = userService.getUsersByCarModelAndSeries("BMW", 600);
+      if (!usersByCar.isEmpty()) {
+         System.out.println("Пользователи, владеющие BMW 600-й серии:");
+         for (User user : usersByCar) {
+            System.out.println("Id = " + user.getId());
+            System.out.println("First Name = " + user.getFirstName());
+            System.out.println("Last Name = " + user.getLastName());
+            System.out.println("Email = " + user.getEmail());
+         }
       } else {
-         System.out.println("Пользователь, владеющей BMW 600-й серии не найден.");
+         System.out.println("Пользователи, владеющие BMW 600-й серии, не найдены.");
       }
 
-      User userByCar1 = userService.getUserByCarModelAndSeries("GAZ", 66);
-      if (userByCar1 != null) {
-         System.out.println("Пользователь, владеющий ГАЗ-66:");
-         System.out.println("Id = " + userByCar1.getId());
-         System.out.println("First Name = " + userByCar1.getFirstName());
-         System.out.println("Last Name = " + userByCar1.getLastName());
-         System.out.println("Email = " + userByCar1.getEmail());
+      List<User> usersByCar1 = userService.getUsersByCarModelAndSeries("GAZ", 66);
+      if (!usersByCar1.isEmpty()) {
+         System.out.println("Пользователи, владеющие ГАЗ-66:");
+         for (User user : usersByCar1) {
+            System.out.println("Id = " + user.getId());
+            System.out.println("First Name = " + user.getFirstName());
+            System.out.println("Last Name = " + user.getLastName());
+            System.out.println("Email = " + user.getEmail());
+         }
       } else {
-         System.out.println("Пользователь, владеющей ГАЗ-66 не найден.");
+         System.out.println("Пользователи, владеющие ГАЗ-66, не найдены.");
       }
-
       context.close();
    }
 }
